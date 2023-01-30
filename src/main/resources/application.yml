@@ -1,0 +1,39 @@
+spring:
+    cloud:
+        stream:
+            bindings:
+                personWasCreated-out-0:
+                    destination: template_person-was-created
+                    contentType: application/json
+                    group: 'template-listeners'
+                    producer:
+                        maxAttempts: 1
+                        concurrency: 1
+                personWasCreated-in-0:
+                    destination: template_person-was-created
+                    contentType: application/json
+                    group: 'template-listeners'
+                    consumer:
+                        maxAttempts: 1
+                        concurrency: 1
+            kafka:
+                binder:
+                    autoCreateTopics: true
+                    replication-factor: 1
+                    producer-properties:
+                        key.serializer: org.apache.kafka.common.serialization.StringSerializer
+                bindings:
+                    personWasCreated-in-0:
+                        content-type: application/json
+                        group: 'template-listeners'
+                        consumer:
+                            startOffset: latest
+                            enableDlq: true
+                            dlqName: template_person-was-created-DLQ
+                            configuration:
+                                max.poll.records: 20
+                                max.poll.interval.ms: 120000
+            function:
+                definition: personWasCreated
+    kafka:
+        bootstrap-servers: http://localhost:9092
